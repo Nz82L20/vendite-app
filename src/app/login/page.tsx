@@ -1,26 +1,27 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
-function toEmailFromUsername(username: string) {
+function usernameToEmail(username: string): string {
   const u = username.trim().toLowerCase();
-  return ${u}@vendite.local;
+  return `${u}@vendite.local`;
 }
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function login() {
+  async function handleLogin() {
     setError(null);
     setLoading(true);
 
-    const email = toEmailFromUsername(username);
+    const email = usernameToEmail(username);
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -53,16 +54,16 @@ export default function LoginPage() {
 
       <input
         style={{ width: "100%", padding: 12, fontSize: 16, marginTop: 10 }}
-        placeholder="password"
         type="password"
+        placeholder="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
 
       <button
         style={{ width: "100%", padding: 12, marginTop: 12, fontSize: 16 }}
-        onClick={login}
-        disabled={!username || !password || loading}
+        onClick={handleLogin}
+        disabled={loading || !username || !password}
       >
         {loading ? "Accesso..." : "Entra"}
       </button>
