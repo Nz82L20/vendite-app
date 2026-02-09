@@ -11,7 +11,7 @@ export default function AuthCallbackPage() {
     (async () => {
       const url = window.location.href;
 
-      // PKCE: rientri con ?code=...
+      // ✅ Google OAuth (PKCE) rientra con ?code=...
       if (url.includes("?code=")) {
         const { error } = await supabase.auth.exchangeCodeForSession(url);
         if (error) {
@@ -20,7 +20,7 @@ export default function AuthCallbackPage() {
         }
       }
 
-      // pulizia URL e redirect
+      // pulisci URL e vai alla home
       window.history.replaceState(null, "", "/");
       router.replace("/");
     })();
@@ -28,3 +28,4 @@ export default function AuthCallbackPage() {
 
   return <p style={{ padding: 16 }}>Accesso in corso…</p>;
 }
+
