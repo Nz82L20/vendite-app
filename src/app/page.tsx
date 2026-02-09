@@ -27,31 +27,39 @@ export default function HomePage() {
 
   async function loadDashboard() {
     setErr(null);
+
     const check = await requireActiveProfile();
+
     if (!check.ok) {
       if (check.reason === "not_logged") router.replace("/login");
-      else router.replace("/blocked");
+      else if (check.reason === "inactive") router.replace("/blocked");
+      else if (check.reason === "no_profile") router.replace("/login");
       return;
     }
+
     setRole(check.role);
     setEmail(check.email ?? "");
 
     const { data, error } = await supabase.rpc("dashboard_summary", {
       limit_count: 20,
     });
+
     if (error) {
       setErr(error.message);
       return;
     }
-    setTodayTotal(Number(data.today_total ?? 0));
-    setMonthTotal(Number(data.month_total ?? 0));
-    setRecent((data.recent_sales ?? []) as RecentSale[]);
+
+    setTodayTotal(Number(data?.today_total ?? 0));
+    setMonthTotal(Number(data?.month_total ?? 0));
+    setRecent((data?.recent_sales ?? []) as RecentSale[]);
   }
 
   async function addSale() {
     setErr(null);
+
     const { data: sessionData } = await supabase.auth.getSession();
     const session = sessionData.session;
+
     if (!session) {
       router.replace("/login");
       return;
@@ -91,35 +99,17 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (loading) {
-    return <p style={{ padding: 16 }}>Caricamento…</p>;
-  }
+  if (loading) return <p style={{ padding: 16 }}>Caricamento…</p>;
 
   return (
     <div style={{ maxWidth: 520, margin: "0 auto", padding: 16 }}>
-      {/* 🔴 MARCATORE DI BUILD */}
-      <div
-        style={{
-          padding: 10,
-          marginBottom: 12,
-          background: "#ffeb3b",
-          fontWeight: 700,
-          textAlign: "center",
-          borderRadius: 8,
-        }}
-      >
-        HOME VENDITE – BUILD MARKER – 2026-02-09
-      </div>
-
       <div style={{ display: "flex", gap: 8, justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 14, opacity: 0.7 }}>Connesso:</div>
           <div style={{ fontSize: 14 }}>{email}</div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          {canGoAdmin && (
-            <button onClick={() => router.push("/admin")}>Admin</button>
-          )}
+          {canGoAdmin && <button onClick={() => router.push("/admin")}>Admin</button>}
           <button onClick={() => router.push("/export")}>Export</button>
           <button onClick={logout}>Esci</button>
         </div>
@@ -128,45 +118,18 @@ export default function HomePage() {
       <h1 style={{ marginTop: 16 }}>Vendite</h1>
 
       <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-        <div
-          style={{
-            flex: 1,
-            padding: 12,
-            border: "1px solid #ddd",
-            borderRadius: 12,
-          }}
-        >
+        <div style={{ flex: 1, padding: 12, border: "1px solid #ddd", borderRadius: 12 }}>
           <div style={{ fontSize: 14, opacity: 0.7 }}>Totale Oggi</div>
-          <div style={{ fontSize: 26, fontWeight: 700 }}>
-            {todayTotal.toFixed(2)} €
-          </div>
+          <div style={{ fontSize: 26, fontWeight: 700 }}>{todayTotal.toFixed(2)} €</div>
         </div>
-        <div
-          style={{
-            flex: 1,
-            padding: 12,
-            border: "1px solid #ddd",
-            borderRadius: 12,
-          }}
-        >
+        <div style={{ flex: 1, padding: 12, border: "1px solid #ddd", borderRadius: 12 }}>
           <div style={{ fontSize: 14, opacity: 0.7 }}>Totale Mese</div>
-          <div style={{ fontSize: 26, fontWeight: 700 }}>
-            {monthTotal.toFixed(2)} €
-          </div>
+          <div style={{ fontSize: 26, fontWeight: 700 }}>{monthTotal.toFixed(2)} €</div>
         </div>
       </div>
 
-      <div
-        style={{
-          marginTop: 16,
-          padding: 12,
-          border: "1px solid #ddd",
-          borderRadius: 12,
-        }}
-      >
-        <div style={{ fontSize: 14, opacity: 0.7 }}>
-          Inserisci vendita
-        </div>
+      <div style={{ marginTop: 16, padding: 12, border: "1px solid #ddd", borderRadius: 12 }}>
+        <div style={{ fontSize: 14, opacity: 0.7 }}>Inserisci vendita</div>
         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
           <input
             style={{ flex: 1, padding: 12, fontSize: 18 }}
@@ -175,10 +138,7 @@ export default function HomePage() {
             onChange={(e) => setAmount(e.target.value)}
             inputMode="decimal"
           />
-          <button
-            style={{ padding: "12px 16px", fontSize: 16 }}
-            onClick={addSale}
-          >
+          <button style={{ padding: "12px 16px", fontSize: 16 }} onClick={addSale}>
             Salva
           </button>
         </div>
@@ -188,20 +148,10 @@ export default function HomePage() {
       <h2 style={{ marginTop: 16 }}>Ultime vendite</h2>
       <div style={{ display: "grid", gap: 8 }}>
         {recent.map((s) => (
-          <div
-            key={s.id}
-            style={{
-              padding: 12,
-              border: "1px solid #eee",
-              borderRadius: 12,
-            }}
-          >
-            <div style={{ fontSize: 18, fontWeight: 700 }}>
-              {Number(s.amount).toFixed(2)} €
-            </div>
+          <div key={s.id} style={{ padding: 12, border: "1px solid #eee", borderRadius: 12 }}>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>{Number(s.amount).toFixed(2)} €</div>
             <div style={{ fontSize: 13, opacity: 0.7 }}>
-              {new Date(s.created_at).toLocaleString("it-IT")} —{" "}
-              {s.created_by_email ?? "—"}
+              {new Date(s.created_at).toLocaleString("it-IT")} — {s.created_by_email ?? "—"}
             </div>
           </div>
         ))}
@@ -209,4 +159,3 @@ export default function HomePage() {
     </div>
   );
 }
-

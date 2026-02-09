@@ -9,24 +9,17 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     (async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-
-      // Google OAuth (PKCE) -> arriva con ?code=...
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          router.replace(`/login?err=${encodeURIComponent(error.message)}`);
-          return;
-        }
-      } else {
-        // Magic link (o altri) -> assicura persistenza
-        await supabase.auth.getSession();
+      // ✅ Pulisce hash/query in URL dopo callback
+      if (window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname);
       }
 
-      // Pulisci e vai alla home
-      window.history.replaceState(null, "", "/");
-      router.replace("/");
+      // ✅ forza lettura sessione dal browser
+      const { data } = await supabase.auth.getSession();
+
+      // se sessione ok -> home, altrimenti login
+      if (data.session) router.replace("/");
+      else router.replace("/login");
     })();
   }, [router]);
 
