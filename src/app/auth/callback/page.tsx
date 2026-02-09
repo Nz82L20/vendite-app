@@ -9,18 +9,22 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     (async () => {
-      const url = window.location.href;
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
 
-      // ✅ Google OAuth (PKCE) rientra con ?code=...
-      if (url.includes("?code=")) {
-        const { error } = await supabase.auth.exchangeCodeForSession(url);
+      // Google OAuth (PKCE) -> arriva con ?code=...
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
           router.replace(`/login?err=${encodeURIComponent(error.message)}`);
           return;
         }
+      } else {
+        // Magic link (o altri) -> assicura persistenza
+        await supabase.auth.getSession();
       }
 
-      // pulisci URL e vai alla home
+      // Pulisci e vai alla home
       window.history.replaceState(null, "", "/");
       router.replace("/");
     })();
@@ -28,4 +32,3 @@ export default function AuthCallbackPage() {
 
   return <p style={{ padding: 16 }}>Accesso in corso…</p>;
 }
-
