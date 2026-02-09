@@ -9,17 +9,13 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     (async () => {
-      // ✅ Pulisce hash/query in URL dopo callback
+      // pulisci hash dall'URL
       if (window.location.hash) {
         window.history.replaceState(null, "", window.location.pathname);
       }
-
-      // ✅ forza lettura sessione dal browser
-      const { data } = await supabase.auth.getSession();
-
-      // se sessione ok -> home, altrimenti login
-      if (data.session) router.replace("/");
-      else router.replace("/login");
+      // forza lettura sessione
+      await supabase.auth.getSession();
+      router.replace("/");
     })();
   }, [router]);
 

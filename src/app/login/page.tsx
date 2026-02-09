@@ -40,15 +40,15 @@ export default function LoginPage() {
       />
 
       <button
-        style={{ width: "100%", padding: 12, marginTop: 12 }}
+        style={{ width: "100%", padding: 12, marginTop: 12, fontSize: 16 }}
         onClick={sendLink}
         disabled={!email || loading}
       >
         {loading ? "Invio..." : "Invia magic link"}
       </button>
 
-      {sent && <p>Link inviato! Controlla la posta.</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {sent && <p style={{ marginTop: 12 }}>Link inviato! Controlla la posta.</p>}
+      {error && <p style={{ marginTop: 12, color: "red" }}>{error}</p>}
     </div>
   );
 }
