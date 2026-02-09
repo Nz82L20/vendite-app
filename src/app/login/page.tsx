@@ -10,8 +10,8 @@ export default function LoginPage() {
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
 
-  // ✅ Dominio "stabile" per far funzionare il link anche con PC spento (production)
-  // In locale userai comunque localhost automaticamente.
+  // ✅ In produzione deve puntare al dominio pubblico stabile (funziona anche con PC spento)
+  // In locale usa localhost.
   const redirectBase = useMemo(() => {
     if (typeof window === "undefined") return "https://vendite-app.vercel.app";
     const host = window.location.host;
@@ -19,7 +19,7 @@ export default function LoginPage() {
     return isLocal ? window.location.origin : "https://vendite-app.vercel.app";
   }, []);
 
-  async function sendLink() {
+  async function sendMagicLink() {
     setError(null);
     setSent(false);
 
@@ -32,19 +32,23 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
-          // 🔥 manda SEMPRE al sito pubblico in produzione
+          // 🔥 redirect su Vercel (mobile + pc spento ok)
           emailRedirectTo: `${redirectBase}/auth/callback`,
         },
       });
 
-      if (error) setError(error.message);
-      else setSent(true);
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      setSent(true);
     } finally {
       setLoadingEmail(false);
     }
   }
 
-  async function loginGoogle() {
+  async function signInWithGoogle() {
     setError(null);
     setSent(false);
 
@@ -54,23 +58,25 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          // dopo Google torna qui
+          // Torna sempre al callback (prod o local)
           redirectTo: `${redirectBase}/auth/callback`,
         },
       });
 
       if (error) setError(error.message);
+      // Se non c'è errore, il browser viene reindirizzato a Google automaticamente
     } finally {
       setLoadingGoogle(false);
     }
   }
 
-  const canSubmit = email.trim().includes("@") && !loadingEmail && !loadingGoogle;
+  const emailOk = email.trim().includes("@");
+  const disabledAll = loadingEmail || loadingGoogle;
 
   return (
     <div style={{ maxWidth: 420, margin: "40px auto", padding: 16 }}>
       <h1>Accesso</h1>
-      <p>Accedi con Google oppure ricevi un magic link via email.</p>
+      <p>Accedi con Google oppure ricevi un link via email.</p>
 
       {/* ✅ Google */}
       <button
@@ -79,15 +85,17 @@ export default function LoginPage() {
           padding: 12,
           fontSize: 16,
           marginTop: 12,
-          cursor: loadingGoogle ? "not-allowed" : "pointer",
+          cursor: disabledAll ? "not-allowed" : "pointer",
         }}
-        onClick={loginGoogle}
-        disabled={loadingGoogle || loadingEmail}
+        onClick={signInWithGoogle}
+        disabled={disabledAll}
       >
         {loadingGoogle ? "Apro Google…" : "Accedi con Google"}
       </button>
 
-      <hr style={{ margin: "16px 0", opacity: 0.3 }} />
+      <div style={{ margin: "16px 0", opacity: 0.4, textAlign: "center" }}>
+        — oppure —
+      </div>
 
       {/* ✅ Magic link */}
       <input
@@ -104,10 +112,10 @@ export default function LoginPage() {
           padding: 12,
           marginTop: 12,
           fontSize: 16,
-          cursor: canSubmit ? "pointer" : "not-allowed",
+          cursor: !emailOk || disabledAll ? "not-allowed" : "pointer",
         }}
-        onClick={sendLink}
-        disabled={!canSubmit}
+        onClick={sendMagicLink}
+        disabled={!emailOk || disabledAll}
       >
         {loadingEmail ? "Invio in corso…" : "Invia magic link"}
       </button>
@@ -119,6 +127,10 @@ export default function LoginPage() {
       )}
 
       {error && <p style={{ marginTop: 12, color: "red" }}>{error}</p>}
+
+      <p style={{ marginTop: 16, fontSize: 12, opacity: 0.7 }}>
+        Redirect: <code>{redirectBase}/auth/callback</code>
+      </p>
     </div>
   );
 }
