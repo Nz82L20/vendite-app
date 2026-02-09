@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -36,7 +36,9 @@ export default function HomePage() {
     setRole(check.role);
     setEmail(check.email ?? "");
 
-    const { data, error } = await supabase.rpc("dashboard_summary", { limit_count: 20 });
+    const { data, error } = await supabase.rpc("dashboard_summary", {
+      limit_count: 20,
+    });
     if (error) {
       setErr(error.message);
       return;
@@ -89,10 +91,26 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (loading) return <p style={{ padding: 16 }}>Caricamento…</p>;
+  if (loading) {
+    return <p style={{ padding: 16 }}>Caricamento…</p>;
+  }
 
   return (
     <div style={{ maxWidth: 520, margin: "0 auto", padding: 16 }}>
+      {/* 🔴 MARCATORE DI BUILD */}
+      <div
+        style={{
+          padding: 10,
+          marginBottom: 12,
+          background: "#ffeb3b",
+          fontWeight: 700,
+          textAlign: "center",
+          borderRadius: 8,
+        }}
+      >
+        HOME VENDITE – BUILD MARKER – 2026-02-09
+      </div>
+
       <div style={{ display: "flex", gap: 8, justifyContent: "space-between" }}>
         <div>
           <div style={{ fontSize: 14, opacity: 0.7 }}>Connesso:</div>
@@ -110,18 +128,45 @@ export default function HomePage() {
       <h1 style={{ marginTop: 16 }}>Vendite</h1>
 
       <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-        <div style={{ flex: 1, padding: 12, border: "1px solid #ddd", borderRadius: 12 }}>
+        <div
+          style={{
+            flex: 1,
+            padding: 12,
+            border: "1px solid #ddd",
+            borderRadius: 12,
+          }}
+        >
           <div style={{ fontSize: 14, opacity: 0.7 }}>Totale Oggi</div>
-          <div style={{ fontSize: 26, fontWeight: 700 }}>{todayTotal.toFixed(2)} €</div>
+          <div style={{ fontSize: 26, fontWeight: 700 }}>
+            {todayTotal.toFixed(2)} €
+          </div>
         </div>
-        <div style={{ flex: 1, padding: 12, border: "1px solid #ddd", borderRadius: 12 }}>
+        <div
+          style={{
+            flex: 1,
+            padding: 12,
+            border: "1px solid #ddd",
+            borderRadius: 12,
+          }}
+        >
           <div style={{ fontSize: 14, opacity: 0.7 }}>Totale Mese</div>
-          <div style={{ fontSize: 26, fontWeight: 700 }}>{monthTotal.toFixed(2)} €</div>
+          <div style={{ fontSize: 26, fontWeight: 700 }}>
+            {monthTotal.toFixed(2)} €
+          </div>
         </div>
       </div>
 
-      <div style={{ marginTop: 16, padding: 12, border: "1px solid #ddd", borderRadius: 12 }}>
-        <div style={{ fontSize: 14, opacity: 0.7 }}>Inserisci vendita</div>
+      <div
+        style={{
+          marginTop: 16,
+          padding: 12,
+          border: "1px solid #ddd",
+          borderRadius: 12,
+        }}
+      >
+        <div style={{ fontSize: 14, opacity: 0.7 }}>
+          Inserisci vendita
+        </div>
         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
           <input
             style={{ flex: 1, padding: 12, fontSize: 18 }}
@@ -130,7 +175,10 @@ export default function HomePage() {
             onChange={(e) => setAmount(e.target.value)}
             inputMode="decimal"
           />
-          <button style={{ padding: "12px 16px", fontSize: 16 }} onClick={addSale}>
+          <button
+            style={{ padding: "12px 16px", fontSize: 16 }}
+            onClick={addSale}
+          >
             Salva
           </button>
         </div>
@@ -140,10 +188,20 @@ export default function HomePage() {
       <h2 style={{ marginTop: 16 }}>Ultime vendite</h2>
       <div style={{ display: "grid", gap: 8 }}>
         {recent.map((s) => (
-          <div key={s.id} style={{ padding: 12, border: "1px solid #eee", borderRadius: 12 }}>
-            <div style={{ fontSize: 18, fontWeight: 700 }}>{Number(s.amount).toFixed(2)} €</div>
+          <div
+            key={s.id}
+            style={{
+              padding: 12,
+              border: "1px solid #eee",
+              borderRadius: 12,
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700 }}>
+              {Number(s.amount).toFixed(2)} €
+            </div>
             <div style={{ fontSize: 13, opacity: 0.7 }}>
-              {new Date(s.created_at).toLocaleString("it-IT")} — {s.created_by_email ?? "—"}
+              {new Date(s.created_at).toLocaleString("it-IT")} —{" "}
+              {s.created_by_email ?? "—"}
             </div>
           </div>
         ))}
@@ -151,3 +209,4 @@ export default function HomePage() {
     </div>
   );
 }
+
