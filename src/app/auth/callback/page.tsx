@@ -9,12 +9,19 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     (async () => {
-      // Lascia a supabase il tempo di salvare la sessione, poi pulisci URL
-      if (window.location.hash) {
-        window.history.replaceState(null, "", window.location.pathname);
+      const url = window.location.href;
+
+      // PKCE: rientri con ?code=...
+      if (url.includes("?code=")) {
+        const { error } = await supabase.auth.exchangeCodeForSession(url);
+        if (error) {
+          router.replace(`/login?err=${encodeURIComponent(error.message)}`);
+          return;
+        }
       }
-      // Verifica sessione (opzionale, ma utile)
-      await supabase.auth.getSession();
+
+      // pulizia URL e redirect
+      window.history.replaceState(null, "", "/");
       router.replace("/");
     })();
   }, [router]);
