@@ -14,12 +14,11 @@ export default function LoginPage() {
     setSent(false);
     setLoading(true);
 
-    // ✅ redirect sempre al tuo dominio corrente (localhost o vercel)
-    const emailRedirectTo = `${window.location.origin}/auth/callback`;
-
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo },
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
     setLoading(false);
@@ -34,24 +33,22 @@ export default function LoginPage() {
       <p>Inserisci email e ricevi il link di accesso.</p>
 
       <input
-        style={{ width: "100%", padding: 12, fontSize: 16, marginTop: 10 }}
+        style={{ width: "100%", padding: 12, fontSize: 16 }}
         placeholder="email@esempio.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        autoCapitalize="none"
-        autoCorrect="off"
       />
 
       <button
-        style={{ width: "100%", padding: 12, marginTop: 12, fontSize: 16 }}
+        style={{ width: "100%", padding: 12, marginTop: 12 }}
         onClick={sendLink}
         disabled={!email || loading}
       >
         {loading ? "Invio..." : "Invia magic link"}
       </button>
 
-      {sent && <p style={{ marginTop: 12 }}>Link inviato! Controlla la posta.</p>}
-      {error && <p style={{ marginTop: 12, color: "red" }}>{error}</p>}
+      {sent && <p>Link inviato! Controlla la posta.</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 }
