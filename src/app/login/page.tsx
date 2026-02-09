@@ -35,7 +35,7 @@ export default function LoginPage() {
 
       if (error) {
         // niente signup: se non esiste o password errata -> messaggio secco
-        setError("Credenziali non valide.");
+        setError(error.message);
         return;
       }
 
